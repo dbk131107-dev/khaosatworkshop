@@ -164,13 +164,22 @@
     <!-- Firebase SDK Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- 1. Cấu hình Firebase ---
-        // Biến toàn cục từ hệ thống
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- 1. Cấu hình Firebase (QUAN TRỌNG: BẠN CẦN THAY THẾ PHẦN NÀY) ---
+        // Copy từ Firebase Console -> Project Settings -> General -> Your apps
+        const firebaseConfig = {
+             apiKey: "AIzaSyACp2ljAHQ1CxToF8k_ZyYKRJyXY17ASwo",
+    authDomain: "ksworkshop-374a3.firebaseapp.com",
+    projectId: "ksworkshop-374a3",
+    storageBucket: "ksworkshop-374a3.firebasestorage.app",
+    messagingSenderId: "631833627668",
+    appId: "1:631833627668:web:797d72001c663cf79dab01"
+        };
+
+        // Đặt tên ứng dụng để phân loại dữ liệu (giữ nguyên cũng được)
+        const appId = 'workshop-tai-che-2024';
 
         // Khởi tạo
         const app = initializeApp(firebaseConfig);
@@ -182,17 +191,15 @@
         const submitBtn = document.getElementById('submitBtn');
 
         // --- 2. Xác thực người dùng (Ẩn danh) ---
-        // Cần xác thực trước khi ghi vào Firestore
         async function initAuth() {
             try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // Đăng nhập ẩn danh trực tiếp
+                await signInAnonymously(auth);
             } catch (error) {
                 console.error("Lỗi đăng nhập:", error);
-                alert("Không thể kết nối đến hệ thống. Vui lòng tải lại trang.");
+                alert("Lỗi kết nối Firebase. Vui lòng kiểm tra lại cấu hình config.");
+                // Ẩn loading nếu lỗi để người dùng biết
+                authLoading.style.display = 'none'; 
             }
         }
 
@@ -200,7 +207,8 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                authLoading.style.display = 'none'; // Ẩn màn hình loading
+                authLoading.style.display = 'none'; // Ẩn màn hình loading khi thành công
+                console.log("Đã kết nối thành công!");
             }
         });
 
@@ -236,7 +244,7 @@
             e.preventDefault();
 
             if (!currentUser) {
-                alert("Đang kết nối hệ thống, vui lòng thử lại sau vài giây.");
+                alert("Hệ thống chưa sẵn sàng. Vui lòng đợi giây lát hoặc tải lại trang.");
                 return;
             }
             
@@ -260,7 +268,7 @@
                 };
 
                 // --- GHI DỮ LIỆU VÀO FIRESTORE ---
-                // Đường dẫn bắt buộc: artifacts/{appId}/public/data/{collectionName}
+                // Lưu ý: Đã đơn giản hóa đường dẫn cho dự án cá nhân
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'workshop_responses'), surveyData);
 
                 // Gửi thành công -> Hiện thông báo
@@ -270,7 +278,7 @@
 
             } catch (error) {
                 console.error("Lỗi khi gửi form:", error);
-                alert("Có lỗi xảy ra khi gửi dữ liệu. Vui lòng thử lại!");
+                alert("Có lỗi xảy ra khi gửi dữ liệu: " + error.message);
             } finally {
                 // Reset nút bấm
                 submitBtn.innerHTML = originalText;
