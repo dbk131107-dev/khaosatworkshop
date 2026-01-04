@@ -269,7 +269,7 @@
 
                 // --- GHI DỮ LIỆU VÀO FIRESTORE ---
                 // Lưu ý: Đã đơn giản hóa đường dẫn cho dự án cá nhân
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'workshop_responses'), surveyData);
+                await addDoc(collection(db, 'workshop_responses'), surveyData);
 
                 // Gửi thành công -> Hiện thông báo
                 formContainer.classList.add('hidden');
@@ -298,3 +298,4 @@
     </script>
 </body>
 </html>
+
